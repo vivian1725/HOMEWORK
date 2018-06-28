@@ -87,6 +87,7 @@
   
 
 
+
 # 使用的套件
 #### 這次主要是使用Keras作為LSTM模型建立的套件
 #### 並輔以numpy與pandas做資料處理
@@ -105,11 +106,19 @@ import pickle
 import quandl
 import codecs
 from datetime import datetime
+from keras.models import load_model
 from keras.models import Sequential
 from keras.layers.recurrent import LSTM
 from keras.layers import Dropout
 from keras.layers import Dense
 from keras.layers import Activation
+from scipy import stats
+import statsmodels.api as sm
+import warnings
+from itertools import product
+from datetime import datetime
+warnings.filterwarnings('ignore')
+plt.style.use('seaborn-poster')
 ```
 
     Using TensorFlow backend.
@@ -298,7 +307,7 @@ def build_lstm_model(input_data, output_size, neurons=20,
     return model
 ```
 
-==============================================================
+=======================================================================================================
 
 # 抓取各交易所比特幣交易資料
 ### 這邊利用Quandl提供的資料集來做為資料集
@@ -365,9 +374,22 @@ btc_usd_datasets
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
-    <tr style="text-align: right;" font="12">
+    <tr style="text-align: right;">
       <th></th>
       <th>BITSTAMP</th>
       <th>COINBASE</th>
@@ -387,6 +409,411 @@ btc_usd_datasets
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <th>2016-01-01</th>
+      <td>433.086003</td>
+      <td>433.358101</td>
+      <td>431.854189</td>
+      <td>433.197419</td>
+      <td>432.873928</td>
+      <td>8749.673805</td>
+    </tr>
+    <tr>
+      <th>2016-01-02</th>
+      <td>433.292697</td>
+      <td>435.286346</td>
+      <td>433.211856</td>
+      <td>432.989873</td>
+      <td>433.695193</td>
+      <td>6591.310053</td>
+    </tr>
+    <tr>
+      <th>2016-01-03</th>
+      <td>428.595713</td>
+      <td>430.697845</td>
+      <td>429.316383</td>
+      <td>427.434460</td>
+      <td>429.011100</td>
+      <td>9678.402186</td>
+    </tr>
+    <tr>
+      <th>2016-01-04</th>
+      <td>432.834487</td>
+      <td>433.938214</td>
+      <td>432.178487</td>
+      <td>430.631979</td>
+      <td>432.395792</td>
+      <td>13463.971066</td>
+    </tr>
+    <tr>
+      <th>2016-01-05</th>
+      <td>432.053592</td>
+      <td>433.300199</td>
+      <td>432.729037</td>
+      <td>430.513601</td>
+      <td>432.149107</td>
+      <td>10381.184703</td>
+    </tr>
+    <tr>
+      <th>2016-01-06</th>
+      <td>430.138415</td>
+      <td>431.829006</td>
+      <td>430.287749</td>
+      <td>428.381249</td>
+      <td>430.159105</td>
+      <td>12809.357391</td>
+    </tr>
+    <tr>
+      <th>2016-01-07</th>
+      <td>447.705438</td>
+      <td>450.860143</td>
+      <td>446.215816</td>
+      <td>446.620606</td>
+      <td>447.850501</td>
+      <td>34986.550228</td>
+    </tr>
+    <tr>
+      <th>2016-01-08</th>
+      <td>453.746023</td>
+      <td>456.297446</td>
+      <td>455.519939</td>
+      <td>454.347885</td>
+      <td>454.977823</td>
+      <td>21181.179401</td>
+    </tr>
+    <tr>
+      <th>2016-01-09</th>
+      <td>449.706449</td>
+      <td>452.112265</td>
+      <td>450.358646</td>
+      <td>454.445267</td>
+      <td>451.655657</td>
+      <td>9862.746028</td>
+    </tr>
+    <tr>
+      <th>2016-01-10</th>
+      <td>444.613427</td>
+      <td>446.888543</td>
+      <td>444.230268</td>
+      <td>447.733606</td>
+      <td>445.866461</td>
+      <td>9171.058738</td>
+    </tr>
+    <tr>
+      <th>2016-01-11</th>
+      <td>445.397624</td>
+      <td>449.175560</td>
+      <td>446.491196</td>
+      <td>449.573412</td>
+      <td>447.659448</td>
+      <td>15308.559910</td>
+    </tr>
+    <tr>
+      <th>2016-01-12</th>
+      <td>442.635775</td>
+      <td>445.906991</td>
+      <td>444.171883</td>
+      <td>448.741337</td>
+      <td>445.363997</td>
+      <td>17392.029789</td>
+    </tr>
+    <tr>
+      <th>2016-01-13</th>
+      <td>429.865880</td>
+      <td>431.182928</td>
+      <td>429.705328</td>
+      <td>434.424323</td>
+      <td>431.294615</td>
+      <td>22499.348192</td>
+    </tr>
+    <tr>
+      <th>2016-01-14</th>
+      <td>430.595248</td>
+      <td>431.932933</td>
+      <td>431.179699</td>
+      <td>432.608325</td>
+      <td>431.579051</td>
+      <td>11583.042117</td>
+    </tr>
+    <tr>
+      <th>2016-01-15</th>
+      <td>395.327840</td>
+      <td>396.047745</td>
+      <td>397.139540</td>
+      <td>397.019737</td>
+      <td>396.383715</td>
+      <td>82756.380098</td>
+    </tr>
+    <tr>
+      <th>2016-01-16</th>
+      <td>372.273967</td>
+      <td>371.902981</td>
+      <td>369.646494</td>
+      <td>375.253691</td>
+      <td>372.269283</td>
+      <td>47563.958484</td>
+    </tr>
+    <tr>
+      <th>2016-01-17</th>
+      <td>382.814307</td>
+      <td>384.891976</td>
+      <td>383.395818</td>
+      <td>388.136221</td>
+      <td>384.809581</td>
+      <td>18566.791959</td>
+    </tr>
+    <tr>
+      <th>2016-01-18</th>
+      <td>382.049880</td>
+      <td>380.191326</td>
+      <td>382.612068</td>
+      <td>386.205222</td>
+      <td>382.764624</td>
+      <td>17931.682925</td>
+    </tr>
+    <tr>
+      <th>2016-01-19</th>
+      <td>381.875751</td>
+      <td>379.181472</td>
+      <td>383.059396</td>
+      <td>384.537452</td>
+      <td>382.163518</td>
+      <td>18685.000360</td>
+    </tr>
+    <tr>
+      <th>2016-01-20</th>
+      <td>400.098151</td>
+      <td>398.347144</td>
+      <td>402.148102</td>
+      <td>402.508822</td>
+      <td>400.775555</td>
+      <td>47943.918698</td>
+    </tr>
+    <tr>
+      <th>2016-01-21</th>
+      <td>412.828309</td>
+      <td>412.743387</td>
+      <td>412.505932</td>
+      <td>415.302977</td>
+      <td>413.345151</td>
+      <td>22129.636515</td>
+    </tr>
+    <tr>
+      <th>2016-01-22</th>
+      <td>389.807055</td>
+      <td>392.281630</td>
+      <td>389.510420</td>
+      <td>394.484037</td>
+      <td>391.520786</td>
+      <td>34867.230657</td>
+    </tr>
+    <tr>
+      <th>2016-01-23</th>
+      <td>388.048747</td>
+      <td>390.415930</td>
+      <td>387.328244</td>
+      <td>389.082836</td>
+      <td>388.718939</td>
+      <td>15856.569111</td>
+    </tr>
+    <tr>
+      <th>2016-01-24</th>
+      <td>399.438070</td>
+      <td>400.545291</td>
+      <td>399.340155</td>
+      <td>395.583534</td>
+      <td>398.726762</td>
+      <td>11898.993957</td>
+    </tr>
+    <tr>
+      <th>2016-01-25</th>
+      <td>394.123921</td>
+      <td>394.071226</td>
+      <td>395.813026</td>
+      <td>395.971571</td>
+      <td>394.994936</td>
+      <td>18312.790925</td>
+    </tr>
+    <tr>
+      <th>2016-01-26</th>
+      <td>392.462031</td>
+      <td>392.911756</td>
+      <td>393.070622</td>
+      <td>396.440152</td>
+      <td>393.721141</td>
+      <td>17369.342003</td>
+    </tr>
+    <tr>
+      <th>2016-01-27</th>
+      <td>394.335429</td>
+      <td>394.299920</td>
+      <td>394.663989</td>
+      <td>394.433113</td>
+      <td>394.433113</td>
+      <td>12045.962727</td>
+    </tr>
+    <tr>
+      <th>2016-01-28</th>
+      <td>382.112568</td>
+      <td>384.168262</td>
+      <td>383.986475</td>
+      <td>383.422435</td>
+      <td>383.422435</td>
+      <td>23693.307497</td>
+    </tr>
+    <tr>
+      <th>2016-01-29</th>
+      <td>375.405357</td>
+      <td>375.802755</td>
+      <td>375.123574</td>
+      <td>375.443895</td>
+      <td>375.443895</td>
+      <td>31228.268957</td>
+    </tr>
+    <tr>
+      <th>2016-01-30</th>
+      <td>377.095168</td>
+      <td>378.898120</td>
+      <td>378.402363</td>
+      <td>378.131883</td>
+      <td>378.131883</td>
+      <td>7524.346396</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2018-05-29</th>
+      <td>7313.561835</td>
+      <td>7319.555427</td>
+      <td>7256.355273</td>
+      <td>7320.208337</td>
+      <td>7302.420218</td>
+      <td>32912.690049</td>
+    </tr>
+    <tr>
+      <th>2018-05-30</th>
+      <td>7433.678883</td>
+      <td>7410.092220</td>
+      <td>7435.904061</td>
+      <td>7421.249082</td>
+      <td>7425.231062</td>
+      <td>23642.821280</td>
+    </tr>
+    <tr>
+      <th>2018-05-31</th>
+      <td>7513.858285</td>
+      <td>7509.528862</td>
+      <td>7507.800687</td>
+      <td>7503.460232</td>
+      <td>7508.662016</td>
+      <td>20317.242457</td>
+    </tr>
+    <tr>
+      <th>2018-06-01</th>
+      <td>7480.517612</td>
+      <td>7461.489319</td>
+      <td>7476.332680</td>
+      <td>7468.174673</td>
+      <td>7471.628571</td>
+      <td>20707.480359</td>
+    </tr>
+    <tr>
+      <th>2018-06-02</th>
+      <td>7595.743627</td>
+      <td>7602.497070</td>
+      <td>7601.029234</td>
+      <td>7611.456144</td>
+      <td>7602.681519</td>
+      <td>13762.744629</td>
+    </tr>
+    <tr>
+      <th>2018-06-03</th>
+      <td>7691.812400</td>
+      <td>7695.990426</td>
+      <td>7706.696376</td>
+      <td>7699.780629</td>
+      <td>7698.569958</td>
+      <td>13923.427246</td>
+    </tr>
+    <tr>
+      <th>2018-06-04</th>
+      <td>7563.667686</td>
+      <td>7546.190384</td>
+      <td>7572.952961</td>
+      <td>7559.445365</td>
+      <td>7560.564099</td>
+      <td>20679.287852</td>
+    </tr>
+    <tr>
+      <th>2018-06-05</th>
+      <td>7494.371636</td>
+      <td>7507.619130</td>
+      <td>7487.076475</td>
+      <td>7498.873124</td>
+      <td>7496.985091</td>
+      <td>23388.724532</td>
+    </tr>
+    <tr>
+      <th>2018-06-06</th>
+      <td>7605.202879</td>
+      <td>7598.733666</td>
+      <td>7600.973325</td>
+      <td>7588.131850</td>
+      <td>7598.260430</td>
+      <td>20012.225930</td>
+    </tr>
+    <tr>
+      <th>2018-06-07</th>
+      <td>7695.606549</td>
+      <td>7690.472766</td>
+      <td>7696.137207</td>
+      <td>7690.226731</td>
+      <td>7693.110813</td>
+      <td>18364.752663</td>
+    </tr>
+    <tr>
+      <th>2018-06-08</th>
+      <td>7617.315370</td>
+      <td>7621.473462</td>
+      <td>7614.254115</td>
+      <td>7622.616019</td>
+      <td>7618.914741</td>
+      <td>12775.157679</td>
+    </tr>
+    <tr>
+      <th>2018-06-09</th>
+      <td>7598.005433</td>
+      <td>7599.669124</td>
+      <td>7590.016189</td>
+      <td>7588.716522</td>
+      <td>7594.101817</td>
+      <td>8126.279316</td>
+    </tr>
+    <tr>
+      <th>2018-06-10</th>
+      <td>6965.698109</td>
+      <td>6942.736380</td>
+      <td>6966.179545</td>
+      <td>6986.947837</td>
+      <td>6965.390468</td>
+      <td>48541.296127</td>
+    </tr>
+    <tr>
+      <th>2018-06-11</th>
+      <td>6754.939110</td>
+      <td>6761.736699</td>
+      <td>6747.543538</td>
+      <td>6761.810263</td>
+      <td>6756.507403</td>
+      <td>31992.052361</td>
+    </tr>
     <tr>
       <th>2018-06-12</th>
       <td>6694.118400</td>
@@ -566,14 +993,14 @@ for altcoin in altcoins:
     altcoin_data[altcoin] = crypto_price_df
 ```
 
-    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&start=1451577600.0&end=1530167947.310853&period=86400
-    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&start=1451577600.0&end=1530167947.310853&period=86400 at USDT_ETH
-    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_LTC&start=1451577600.0&end=1530167949.203303&period=86400
-    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_LTC&start=1451577600.0&end=1530167949.203303&period=86400 at USDT_LTC
-    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XRP&start=1451577600.0&end=1530167949.984989&period=86400
-    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XRP&start=1451577600.0&end=1530167949.984989&period=86400 at USDT_XRP
-    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XMR&start=1451577600.0&end=1530167950.660273&period=86400
-    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XMR&start=1451577600.0&end=1530167950.660273&period=86400 at USDT_XMR
+    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&start=1451577600.0&end=1530179875.045544&period=86400
+    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&start=1451577600.0&end=1530179875.045544&period=86400 at USDT_ETH
+    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_LTC&start=1451577600.0&end=1530179876.887559&period=86400
+    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_LTC&start=1451577600.0&end=1530179876.887559&period=86400 at USDT_LTC
+    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XRP&start=1451577600.0&end=1530179877.934&period=86400
+    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XRP&start=1451577600.0&end=1530179877.934&period=86400 at USDT_XRP
+    Downloading https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XMR&start=1451577600.0&end=1530179879.295549&period=86400
+    Cached https://poloniex.com/public?command=returnChartData&currencyPair=USDT_XMR&start=1451577600.0&end=1530179879.295549&period=86400 at USDT_XMR
 
 
 
@@ -634,113 +1061,10 @@ train, test, X_train, X_test, y_train, y_test = prepare_data(hist)
 
 
 ```python
-model = build_lstm_model(X_train, output_size=1)
-history = model.fit(X_train, y_train, epochs=100, batch_size=4)
+model = load_model('10萬epochs.octet-stream')
+#model = build_lstm_model(X_train, output_size=1)
+##history = model.fit(X_train, y_train, epochs=10, batch_size=4)
 ```
-
-    Epoch 1/100
-    805/805 [==============================] - 4s 5ms/step - loss: 0.0911
-    Epoch 2/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0703
-    Epoch 3/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0625
-    Epoch 4/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0546
-    Epoch 5/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0515
-    Epoch 6/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0460
-    Epoch 7/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0450
-    Epoch 8/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0414
-    Epoch 9/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0401
-    Epoch 10/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0393
-    Epoch 11/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0364
-    Epoch 12/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0360
-    Epoch 13/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0366
-    ================] - 4s 5ms/step - loss: 0.0310
-    Epoch 21/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0324
-    Epoch 22/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0315
-    Epoch 23/100
-    805/805 [================Epoch 14/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0354
-    Epoch 15/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0347
-    Epoch 16/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0362
-    Epoch 17/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0335
-    Epoch 18/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0346
-    Epoch 19/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0344
-    Epoch 20/100
-    805/805 [============================] - 3s 4ms/step - loss: 0.0321
-    Epoch 24/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0316
-    ........
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0290
-    Epoch 75/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0296
-    Epoch 76/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0297
-    Epoch 77/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0293
-    Epoch 78/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0295
-    Epoch 79/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0294
-    Epoch 80/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0293
-    Epoch 81/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0294
-    Epoch 82/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0300
-    Epoch 83/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0301
-    Epoch 84/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0283
-    Epoch 85/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0284
-    Epoch 86/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0297
-    Epoch 87/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0284
-    Epoch 88/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0302
-    Epoch 89/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0287
-    Epoch 90/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0295
-    Epoch 91/100
-    805/805 [==============================] - 4s 5ms/step - loss: 0.0281
-    Epoch 92/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0295
-    Epoch 93/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0291
-    Epoch 94/100
-    805/805 [==============================] - 4s 5ms/step - loss: 0.0284
-    Epoch 95/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0294
-    Epoch 96/100
-    805/805 [==============================] - 4s 5ms/step - loss: 0.0286
-    Epoch 97/100
-    805/805 [==============================] - 4s 4ms/step - loss: 0.0300
-    Epoch 98/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0294
-    Epoch 99/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0291
-    Epoch 100/100
-    805/805 [==============================] - 3s 4ms/step - loss: 0.0292
-
 
 ## 還原結果
 #### 因為資料集都是經過normailise的數值
@@ -766,5 +1090,106 @@ line_plot(targets[-n:], preds[-n:], 'actual', 'prediction')
 
 
 ![png](output_46_0.png)
+
+
+## 透過ARMIA模型預測Bitcoin比特幣未來1個月交易價格
+## 資料檢索
+#### 使用Kaggle提供Bitcoin2012-2018每分鐘CSV交易資料集
+```python
+df = pd.read_csv('../input/bitstampUSD_1-min_data_2012-01-01_to_2018-03-27.csv')
+df.head()
+```
+
+Timestamp	Open	High	Low	Close	Volume_(BTC)	Volume_(Currency)	Weighted_Price
+0	1325317920	4.39	4.39	4.39	4.39	0.455581	2.0	4.39
+1	1325317980	4.39	4.39	4.39	4.39	0.455581	2.0	4.39
+2	1325318040	4.39	4.39	4.39	4.39	0.455581	2.0	4.39
+3	1325318100	4.39	4.39	4.39	4.39	0.455581	2.0	4.39
+4	1325318160	4.39	4.39	4.39	4.39	0.455581	2.0	4.39
+
+## 重新採樣每日、每月、每年、每季資料
+```python
+df.Timestamp = pd.to_datetime(df.Timestamp, unit='s')
+df.index = df.Timestamp
+df = df.resample('D').mean()
+df_month = df.resample('M').mean()
+df_year = df.resample('A-DEC').mean()
+df_Q = df.resample('Q-DEC').mean()
+```
+
+## 顯示Bitcoin的美元走勢
+```python
+fig = plt.figure(figsize=[15, 7])
+plt.suptitle('Bitcoin exchanges, mean USD', fontsize=22)
+
+plt.subplot(221)
+plt.plot(df.Weighted_Price, '-', label='By Days')
+plt.legend()
+
+plt.subplot(222)
+plt.plot(df_month.Weighted_Price, '-', label='By Months')
+plt.legend()
+
+plt.subplot(223)
+plt.plot(df_Q.Weighted_Price, '-', label='By Quarters')
+plt.legend()
+
+plt.subplot(224)
+plt.plot(df_year.Weighted_Price, '-', label='By Years')
+plt.legend()
+
+plt.show()
+```
+![png](BitcoinUSD.png)
+
+
+## 模型選擇
+#### 透過自相關函數和偏自相關函數建立模型
+
+```python
+plt.figure(figsize=(15,7))
+ax = plt.subplot(211)
+sm.graphics.tsa.plot_acf(df_month.prices_box_diff2[13:].values.squeeze(), lags=48, ax=ax)
+ax = plt.subplot(212)
+sm.graphics.tsa.plot_pacf(df_month.prices_box_diff2[13:].values.squeeze(), lags=48, ax=ax)
+plt.tight_layout()
+plt.show()
+```
+![png](Autocorrelation.png)
+
+
+#### 最透過反轉Box-Cox轉換函數後，預測出價格走勢
+
+```python
+def invboxcox(y,lmbda):
+   if lmbda == 0:
+      return(np.exp(y))
+   else:
+      return(np.exp(np.log(lmbda*y+1)/lmbda))
+      
+df_month2 = df_month[['Weighted_Price']]
+date_list = [datetime(2017, 6, 30), datetime(2017, 7, 31), datetime(2017, 8, 31), datetime(2017, 9, 30), 
+             datetime(2017, 10, 31), datetime(2017, 11, 30), datetime(2017, 12, 31), datetime(2018, 1, 31),datetime(2018, 5, 31),
+             datetime(2018, 10, 30)]
+future = pd.DataFrame(index=date_list, columns= df_month.columns)
+df_month2 = pd.concat([df_month2, future])
+df_month2['forecast'] = invboxcox(best_model.predict(start=0, end=75), lmbda)
+plt.figure(figsize=(15,7))
+df_month2.Weighted_Price.plot()
+df_month2.forecast.plot(color='r', ls='--', label='Predicted Weighted_Price')
+plt.legend()
+plt.title('Bitcoin exchanges, by months')
+plt.ylabel('mean USD')
+plt.show()
+
+
+```
+
+![png](Arima.png)
+
+
+##  T-Brain - 趨勢科技-台灣ETF價格預測競賽
+
+![jpg](ETFStation.jpg)
 
 
