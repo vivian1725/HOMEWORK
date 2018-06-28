@@ -367,7 +367,7 @@ btc_usd_datasets
 <div>
 <table border="1" class="dataframe">
   <thead>
-    <tr style="text-align: right;">
+    <tr style="text-align: right;" font="12">
       <th></th>
       <th>BITSTAMP</th>
       <th>COINBASE</th>
