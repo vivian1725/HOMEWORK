@@ -73,13 +73,13 @@
 ![Alt text](LINE5.png)
 
 ### 使用套件
-  -（+*）json
-  -（+*） requests
-  -（+*） pandas 
-  -（+*） matplotlib
-  -（+*） numpy 
-  -（+*） quandl
-  -（+*） keras 
+  . json
+  . requests
+  . pandas 
+  . matplotlib
+  . numpy 
+  . quandl
+  . keras 
 
 
 ### 2. 使用程式捉取Quandl各交易所的比特幣平均金額
